@@ -5,13 +5,10 @@ H5调用摄像头的demo
 运行Application
 
 ## step 2
-访问 http://localhost:9001/camera.html
+访问 http://localhost:9001/camera.html 开启摄像头
 
 ## step 3
-访问 http://localhost:9001/client.html
-
-## step 4
-点击 shot 按钮
+访问 http://localhost:9001/client.html 点击 shot 按钮进行拍摄
 
 ## 主要实现
 
