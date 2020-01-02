@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script type="text/javascript" src="/jquery/jquery-1.8.3.min.js"></script>
+</head>
+<body>
+
+<video id="video" width="640" height="480" autoplay></video>
+<canvas id="canvas" width="640" height="480"></canvas>
+
+
+<script>
+    $(function () {
+        var socketUrl = "ws://localhost:9001/camera-server";
+
+        var aVideo = document.getElementById('video');
+        var aCanvas = document.getElementById('canvas');
+        var ctx=aCanvas.getContext('2d');
+
+        navigator.getUserMedia  = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;//获取媒体对象（这里指摄像头）
+        navigator.getUserMedia({video:true}, gotStream, noStream);//参数1获取用户打开权限；参数二成功打开后调用，并传一个视频流对象，参数三打开失败后调用，传错误信息
+
+        function gotStream(stream) {
+            video.srcObject = stream;
+            video.onerror = function () {
+                stream.stop();
+            };
+            stream.onended = noStream;
+            video.onloadedmetadata = function () {
+                console.log('摄像头成功打开！');
+            };
+        }
+
+        function noStream(err) {
+            alert(err);
+        }
+
+        // 初始化一个 WebSocket 对象
+        var ws = new WebSocket(socketUrl);
+
+        // 建立 web socket 连接成功触发事件
+        ws.onopen = function () {
+            // 使用 send() 方法发送数据
+            console.log("数据发送中...");
+            ws.send("hello");
+        };
+
+        // 接收服务端数据时触发事件
+        ws.onmessage = function (evt) {
+            var received_msg = evt.data;
+            console.log("revice:"+evt.data);
+            if(evt.data == 'shot') {
+                ctx.drawImage(aVideo, 0, 0, 640, 480);//将获取视频绘制在画布上
+                console.log(aCanvas.toDataURL());
+                $.ajax( {
+                    url : "/cameraController/receiveImg",
+                    data : {img:aCanvas.toDataURL()},
+                    type : "post",
+                    dataType : "text",
+                    success : function(data) {
+                        console.log(data);
+                    },error: function(XMLHttpRequest, textStatus, errorThrown) {
+                        console.log("error : receiveImg");
+                    }
+                });
+            }
+        };
+
+        // 断开 web socket 连接成功触发事件
+        ws.onclose = function () {
+            console.log("连接已关闭...");
+        };
+    });
+
+
+
+</script>
+</body>
+</html>

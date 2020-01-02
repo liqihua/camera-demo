@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script type="text/javascript" src="/jquery/jquery-1.8.3.min.js"></script>
+    <style>
+        #div-warp{text-align: center;margin-top: 50px;}
+    </style>
+</head>
+<body>
+    <div id="div-warp">
+        <button id="btn-shot">shot</button>
+        <img id="img-shot" src=""/>
+    </div>
+<script>
+    $(function () {
+        var socketUrl = "ws://localhost:9001/getImg";
+
+        $("#btn-shot").click(function () {
+            $.ajax( {
+                url : "/cameraController/shot",
+                type : "post",
+                dataType : "text",
+                success : function(data) {
+                    console.log(data);
+                },error: function(XMLHttpRequest, textStatus, errorThrown) {
+                    console.log("error : shot");
+                }
+            });
+        });
+
+        // 初始化一个 WebSocket 对象
+        var ws = new WebSocket(socketUrl);
+
+        // 建立 web socket 连接成功触发事件
+        ws.onopen = function () {
+            // 使用 send() 方法发送数据
+            console.log("数据发送中...");
+            ws.send("hello");
+        };
+
+        // 接收服务端数据时触发事件
+        ws.onmessage = function (evt) {
+            var received_msg = evt.data;
+            console.log("revice:"+evt.data);
+            if(evt.data.indexOf('Established') == -1){
+                $("#img-shot").attr("src",evt.data);
+            }
+        };
+
+        // 断开 web socket 连接成功触发事件
+        ws.onclose = function () {
+            console.log("连接已关闭...");
+        };
+
+
+    });
+</script>
+</body>
+</html>
